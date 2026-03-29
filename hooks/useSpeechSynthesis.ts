@@ -34,6 +34,7 @@ export const useSpeechSynthesis = () => {
     const audioContextRef = useRef<AudioContext | null>(null);
     const currentSourceRef = useRef<AudioBufferSourceNode | null>(null);
     const audioCache = useRef<Map<string, AudioBuffer>>(new Map());
+    const isQuotaExhausted = useRef<boolean>(false);
 
     // Initialize AudioContext lazily
     const getAudioContext = () => {
@@ -49,30 +50,23 @@ export const useSpeechSynthesis = () => {
     // Fallback to native TTS
     const playNative = useCallback((text: string) => {
         if (!window.speechSynthesis) {
-            toast.error("Votre navigateur ne supporte pas la synthèse vocale native.");
             setIsSpeaking(false);
             setIsLoading(false);
             setCurrentlySpeakingText(null);
             return;
         }
         
-        // Cancel any ongoing speech
         window.speechSynthesis.cancel();
         
         const speak = () => {
             const utterance = new SpeechSynthesisUtterance(text);
-            
-            // Find the best German voice
             const voices = window.speechSynthesis.getVoices();
             const germanVoice = voices.find(v => v.lang.startsWith('de') && v.name.includes('Google')) || 
                                voices.find(v => v.lang.startsWith('de') && v.name.includes('Natural')) ||
                                voices.find(v => v.lang.startsWith('de')) ||
                                voices[0];
             
-            if (germanVoice) {
-                utterance.voice = germanVoice;
-            }
-            
+            if (germanVoice) utterance.voice = germanVoice;
             utterance.lang = 'de-DE';
             utterance.rate = 0.85;
             utterance.pitch = 1.0;
@@ -84,9 +78,7 @@ export const useSpeechSynthesis = () => {
             utterance.onend = () => {
                 if (utteranceQueue.current.length > 0) {
                     const nextText = utteranceQueue.current.shift();
-                    if (nextText) {
-                        play(nextText, true);
-                    }
+                    if (nextText) play(nextText, true);
                 } else {
                     setIsSpeaking(false);
                     setCurrentlySpeakingText(null);
@@ -120,9 +112,7 @@ export const useSpeechSynthesis = () => {
     }, []);
 
     const play = useCallback(async (text: string, fromQueue = false) => {
-        if (!fromQueue) {
-            cancel();
-        }
+        if (!fromQueue) cancel();
 
         setIsLoading(true);
         setIsSpeaking(true);
@@ -137,20 +127,25 @@ export const useSpeechSynthesis = () => {
             source.buffer = cachedBuffer;
             source.connect(ctx.destination);
             currentSourceRef.current = source;
-            
             source.onended = () => {
                 currentSourceRef.current = null;
                 setIsSpeaking(false);
                 setIsLoading(false);
                 setCurrentlySpeakingText(null);
             };
-            
             setIsLoading(false);
             source.start();
             return;
         }
 
-        // 2. Try Gemini TTS with Retry Logic
+        // 2. If quota was already exhausted this session, skip Gemini and go straight to native
+        if (isQuotaExhausted.current) {
+            setIsLoading(false);
+            playNative(text);
+            return;
+        }
+
+        // 3. Try Gemini TTS with Retry Logic
         const maxRetries = 1;
         let attempt = 0;
 
@@ -186,7 +181,6 @@ export const useSpeechSynthesis = () => {
                 const audioBuffer = ctx.createBuffer(1, float32Data.length, 24000);
                 audioBuffer.getChannelData(0).set(float32Data);
 
-                // Store in cache
                 audioCache.current.set(text, audioBuffer);
 
                 const source = ctx.createBufferSource();
@@ -203,21 +197,21 @@ export const useSpeechSynthesis = () => {
 
                 setIsLoading(false);
                 source.start();
-                return; // Success!
+                return;
 
             } catch (err: any) {
                 attempt++;
                 const rawError = String(err);
                 
-                // If it's a 500 error, retry once
                 if (rawError.includes("500") && attempt <= maxRetries) {
-                    console.log(`Retrying Gemini TTS (Attempt ${attempt})...`);
-                    await new Promise(r => setTimeout(r, 1000));
+                    await new Promise(r => setTimeout(r, 800));
                     continue;
                 }
 
-                // If it's a 429 or we failed retries, fallback to native
-                console.error("Gemini TTS Failed:", rawError);
+                // Silent fallback
+                if (rawError.includes("429") || rawError.includes("RESOURCE_EXHAUSTED")) {
+                    isQuotaExhausted.current = true; // Mark as exhausted for this session
+                }
                 
                 if (rawError.includes("NO_API_KEY")) {
                     toast.info("Veuillez configurer votre clé API pour la voix haute qualité.", { duration: 3000 });
