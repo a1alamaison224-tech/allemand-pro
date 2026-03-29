@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-g" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Professeur de Prononciation Allemande</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react": "https://esm.sh/react@^19.1.1",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "@google/genai": "https://esm.sh/@google/genai",
+    "jspdf": "https://esm.sh/jspdf@2.5.1",
+    "jspdf-autotable": "https://esm.sh/jspdf-autotable@3.8.2"
+  }
+}
+</script>
+<style>
+  :root {
+    /* Base Palette */
+    --color-bg: #f8fafc; /* slate-50 */
+    --color-card-bg: #ffffff;
+    --color-text-base: #334155; /* slate-700 */
+    --color-text-muted: #64748b; /* slate-500 */
+    --color-border: #e2e8f0; /* slate-200 */
+
+    /* Feedback Colors */
+    --color-success: #10b981; /* green-500 */
+    --color-success-light: #ecfdf5; /* green-50 */
+    --color-success-dark: #047857; /* green-700 */
+    --color-error: #ef4444; /* red-500 */
+    --color-error-light: #fef2f2; /* red-50 */
+    --color-error-dark: #b91c1c; /* red-800 */
+    
+    /* Default Theme (fallback) */
+    --theme-color: #6366f1; /* indigo-500 */
+    --theme-color-light: #eef2ff; /* indigo-50 */
+    --theme-color-dark: #4338ca; /* indigo-700 */
+  }
+
+  /* Lesson Theme Colors */
+  .theme-blue { --theme-color: #3b82f6; --theme-color-light: #eff6ff; --theme-color-dark: #1d4ed8; }
+  .theme-teal { --theme-color: #14b8a6; --theme-color-light: #f0fdfa; --theme-color-dark: #0f766e; }
+  .theme-green { --theme-color: #22c55e; --theme-color-light: #f0fdf4; --theme-color-dark: #15803d; }
+  .theme-amber { --theme-color: #f59e0b; --theme-color-light: #fffbeb; --theme-color-dark: #b45309; }
+  .theme-orange { --theme-color: #f97316; --theme-color-light: #fff7ed; --theme-color-dark: #c2410c; }
+  .theme-red { --theme-color: #ef4444; --theme-color-light: #fef2f2; --theme-color-dark: #b91c1c; }
+  .theme-rose { --theme-color: #f43f5e; --theme-color-light: #fff1f2; --theme-color-dark: #be123c; }
+  .theme-purple { --theme-color: #8b5cf6; --theme-color-light: #f5f3ff; --theme-color-dark: #6d28d9; }
+  .theme-violet { --theme-color: #a78bfa; --theme-color-light: #f5f3ff; --theme-color-dark: #6d28d9; }
+  .theme-slate { --theme-color: #64748b; --theme-color-light: #f1f5f9; --theme-color-dark: #334155; }
+  .theme-cyan { --theme-color: #06b6d4; --theme-color-light: #ecfeff; --theme-color-dark: #0e7490; }
+  .theme-sky { --theme-color: #0ea5e9; --theme-color-light: #f0f9ff; --theme-color-dark: #0369a1; }
+  .theme-fuchsia { --theme-color: #d946ef; --theme-color-light: #fdf4ff; --theme-color-dark: #a21caf; }
+  .theme-pink { --theme-color: #ec4899; --theme-color-light: #fdf2f8; --theme-color-dark: #be185d; }
+  .theme-lime { --theme-color: #84cc16; --theme-color-light: #f7fee7; --theme-color-dark: #4d7c0f; }
+
+  body {
+    background-color: var(--color-bg);
+    color: var(--color-text-base);
+  }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .animate-fade-in { animation: fadeIn 0.5s ease-out forwards; }
+  
+  @keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+  }
+  .animate-shake {
+    animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
+  }
+</style>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-100">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

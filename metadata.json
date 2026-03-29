@@ -1,0 +1,7 @@
+{
+  "name": "Professeur de Prononciation Allemande",
+  "description": "Une application interactive pour les francophones, conçue pour maîtriser la prononciation des voyelles et des consonnes allemandes. Inclut des leçons, des quiz et des exercices de répétition.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
